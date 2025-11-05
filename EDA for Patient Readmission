@@ -1,0 +1,173 @@
+
+---HOSPITAL READMISSION - EXPLORATORY DATA ANALYSIS (EDA)  using SQL.(This will help to understand the data structure, distributions,and initial patterns  into readmission factors.)
+
+---1. DATA QUALITY CHECKS
+---Check for missing values in each column
+
+SELECT 
+    'patient_id' as column_name,
+    COUNT(*) as total_rows,
+    SUM(CASE WHEN patient_id IS NULL THEN 1 ELSE 0 END) as missing_count
+    
+FROM HOSPITAL.PATIENT.READMISSION
+UNION ALL
+
+SELECT 'age', COUNT(*), SUM(CASE WHEN age IS NULL THEN 1 ELSE 0 END) 
+FROM HOSPITAL.PATIENT.READMISSION
+UNION ALL
+
+SELECT 'gender', COUNT(*), SUM(CASE WHEN gender IS NULL THEN 1 ELSE 0 END)
+FROM HOSPITAL.PATIENT.READMISSION
+UNION ALL
+
+SELECT 'admission_type', COUNT(*), SUM(CASE WHEN admission_type IS NULL THEN 1 ELSE 0 END) 
+FROM HOSPITAL.PATIENT.READMISSION
+UNION ALL
+
+SELECT 'length_of_stay', COUNT(*), SUM(CASE WHEN length_of_stay IS NULL THEN 1 ELSE 0 END)
+FROM HOSPITAL.PATIENT.READMISSION
+UNION ALL
+
+SELECT 'number_of_diagnoses', COUNT(*), SUM(CASE WHEN number_of_diagnoses IS NULL THEN 1 ELSE 0 END)
+FROM HOSPITAL.PATIENT.READMISSION
+UNION ALL
+
+SELECT 'blood_pressure', COUNT(*), SUM(CASE WHEN blood_pressure IS NULL THEN 1 ELSE 0 END)
+FROM HOSPITAL.PATIENT.READMISSION
+UNION ALL
+
+SELECT 'blood_sugar_levels', COUNT(*), SUM(CASE WHEN blood_sugar_levels IS NULL THEN 1 ELSE 0 END) 
+FROM HOSPITAL.PATIENT.READMISSION
+UNION ALL
+
+SELECT 'previous_admissions', COUNT(*), SUM(CASE WHEN previous_admissions IS NULL THEN 1 ELSE 0 END)
+FROM HOSPITAL.PATIENT.READMISSION
+UNION ALL
+
+SELECT 'readmission', COUNT(*), SUM(CASE WHEN readmission IS NULL THEN 1 ELSE 0 END) 
+FROM HOSPITAL.PATIENT.READMISSION;
+
+-- Check for duplicate patient IDs
+SELECT patient_id, COUNT(*)
+FROM HOSPITAL.PATIENT.READMISSION
+GROUP BY patient_id
+HAVING COUNT(*) > 1;
+
+-- Age distribution
+SELECT 
+    MIN(age) as min_age,
+    MAX(age) as max_age,
+    ROUND(AVG(age), 1) as avg_age,
+    ROUND(AVG(CASE WHEN readmission = 'Yes' THEN age END), 1) as avg_age_readmitted,
+    ROUND(AVG(CASE WHEN readmission = 'No' THEN age END), 1) as avg_age_not_readmitted
+FROM HOSPITAL.PATIENT.READMISSION;
+
+-- Age distribution by groups
+SELECT 
+    CASE 
+        WHEN age BETWEEN 18 AND 30 THEN '01.18-30 Youth'
+        WHEN age BETWEEN 31 AND 50 THEN '02.31-50 Young Aldults'
+        WHEN age BETWEEN 51 AND 70 THEN '03.51-70 Aldults'
+        ELSE '04.71+ Elders'
+    END as age_group,
+    
+    COUNT(*) as patient_count,
+     
+    ROUND(COUNT(*) * 100.0 / (SELECT COUNT(*) FROM HOSPITAL.PATIENT.READMISSION), 1) as percentage
+FROM HOSPITAL.PATIENT.READMISSION
+GROUP BY age_group
+ORDER BY age_group;
+
+-- Number of diagnoses distribution
+SELECT 
+    number_of_diagnoses,
+    COUNT(*) as frequency,
+    
+    ROUND(COUNT(*) * 100.0 / (SELECT COUNT(*) FROM HOSPITAL.PATIENT.READMISSION), 1) as percentage
+
+FROM HOSPITAL.PATIENT.READMISSION
+GROUP BY number_of_diagnoses 
+ORDER BY number_of_diagnoses;
+
+
+SELECT 
+    previous_admissions,
+    COUNT(*) as frequency,
+    ROUND(COUNT(*) * 100.0 / (SELECT COUNT(*) FROM HOSPITAL.PATIENT.READMISSION), 1) as percentage
+    
+FROM HOSPITAL.PATIENT.READMISSION
+GROUP BY previous_admissions
+ORDER BY previous_admissions;
+
+
+-- Blood pressure ranges
+SELECT 
+    CASE 
+        WHEN blood_pressure < 90 THEN 'Low .(<90)'
+        WHEN blood_pressure <= 120 THEN 'Normal. (90-120)'
+        WHEN blood_pressure <= 140 THEN 'High .(121-140)'
+        ELSE 'Very High .(>140)'
+    END as bp_category,
+    COUNT(*) as patient_count,
+    ROUND(COUNT(*) * 100.0 / (SELECT COUNT(*) FROM HOSPITAL.PATIENT.READMISSION), 1) as percentage
+FROM HOSPITAL.PATIENT.READMISSION
+GROUP BY bp_category
+ORDER BY MIN(blood_pressure);
+
+
+-- Blood sugar ranges
+SELECT 
+    CASE 
+        WHEN blood_sugar_levels < 70 THEN 'Low (<70)'
+        WHEN blood_sugar_levels <= 100 THEN 'Normal (70-100)'
+        WHEN blood_sugar_levels <= 125 THEN 'Borderline (101-125)'
+        ELSE 'High (>125)'
+    END as bs_category,
+    COUNT(*) as patient_count,
+    ROUND(COUNT(*) * 100.0 / (SELECT COUNT(*) FROM HOSPITAL.PATIENT.READMISSION), 1) as percentage
+FROM HOSPITAL.PATIENT.READMISSION
+GROUP BY bs_category
+ORDER BY MIN(blood_sugar_levels);
+
+
+-- Gender distribution
+SELECT 
+    gender,
+    COUNT(*) as patient_count,
+    ROUND(COUNT(*) * 100.0 / (SELECT COUNT(*) FROM HOSPITAL.PATIENT.READMISSION), 1) as percentage
+FROM  HOSPITAL.PATIENT.READMISSION
+GROUP BY gender;
+
+
+-- Readmission rates by gender
+SELECT 
+    gender,
+    COUNT(*) as total_patients,
+    SUM(CASE WHEN readmission = 'Yes' THEN 1 ELSE 0 END) as readmitted,
+    ROUND(SUM(CASE WHEN readmission = 'Yes' THEN 1 ELSE 0 END) * 100.0 / COUNT(*), 1) as readmission_rate
+FROM HOSPITAL.PATIENT.READMISSION
+GROUP BY gender;
+
+-- Readmission rates by admission type
+SELECT 
+    admission_type,
+    COUNT(*) as total_patients,
+    SUM(CASE WHEN readmission = 'Yes' THEN 1 ELSE 0 END) as readmitted,
+    ROUND(SUM(CASE WHEN readmission = 'Yes' THEN 1 ELSE 0 END) * 100.0 / COUNT(*), 1) as readmission_rate
+FROM HOSPITAL.PATIENT.READMISSION
+GROUP BY admission_type;
+
+-- Readmission rates by age groups
+SELECT 
+    CASE 
+        WHEN age BETWEEN 18 AND 30 THEN '01.18-30 Youth'
+        WHEN age BETWEEN 31 AND 50 THEN '02.31-50 Young Aldults'
+        WHEN age BETWEEN 51 AND 70 THEN '03.51-70 Aldults'
+        ELSE '04.71+ Elders'
+    END as age_group,
+    COUNT(*) as total_patients,
+    SUM(CASE WHEN readmission = 'Yes' THEN 1 ELSE 0 END) as readmitted,
+    ROUND(SUM(CASE WHEN readmission = 'Yes' THEN 1 ELSE 0 END) * 100.0 / COUNT(*), 1) as readmission_rate
+FROM HOSPITAL.PATIENT.READMISSION
+GROUP BY age_group
+ORDER BY age_group;
