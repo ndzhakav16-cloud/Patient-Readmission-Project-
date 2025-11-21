@@ -32,9 +32,9 @@ This project analyzes a hospital patient readmission dataset to uncover meaningf
 | Excel                    | Data cleaning and exploratory analysis        |
 | Google Looker Studio     | Interactive dashboard creation                |
 | Miro                     | Process mapping and planning                  | 
-| Gantt Chart              | For Project Planning and Scheduling
+| Gantt Chart              | For Project Planning and Scheduling           |
 | PowerPoint               | Presenting insights and recommendations       |
-
+| GitHub                   |  Version control and portfolio documentation  |
   
 # Summary of Report
 - The analysis highlights:
